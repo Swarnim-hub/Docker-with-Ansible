@@ -1,0 +1,54 @@
+- hosts: all
+  tasks:
+  - file:
+        state: directory
+        path: "/dvd1"
+  - mount:
+        src: "/dev/cdrom"
+        path: "/dvd1"
+        state: mounted
+        fstype: "iso9660"
+  - yum_repository:
+          baseurl: "/dvd1/AppStream"
+          name: "mydvd1"
+          description: "my dvd for yum"
+          gpgcheck: no
+  - yum_repository:
+          baseurl: "/dvd1/BaseOS"
+          name: "mydvd2"
+          description: "my dvd for yum"
+          gpgcheck:
+  - name: Docker
+    yum_repository:
+        name: Docker
+        description: Docker repo
+        baseurl: https://download.docker.com/linux/centos/7/x86_64/stable
+        gpgcheck: no
+  - name: starting docker service
+    service:
+        name: "docker"
+        state: started
+        enabled: yes
+  - name: installing Docker SDK for pyhton3
+    command: "pip3 install docker-py"
+  - name: Pull a Docker image
+    docker_image:
+        name: httpd
+        tag: latest
+        source: pull
+  - package:
+        name: "httpd"
+        state: present
+  - copy:
+        dest: "/var/www/html/index.html"
+        content: "this is my webpage\n"
+  - service:
+        name: "httpd"
+        state: started
+        enabled: yes
+  - firewalld:
+        port: "80/tcp"
+        state: enabled
+        permanent: yes
+        immediate: yes
+                        
